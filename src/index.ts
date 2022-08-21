@@ -1,38 +1,46 @@
-import {Game} from "./engine/game";
-import {Path, createOption, createEndPath} from "./engine/path";
-import {Engine} from "./engine/engine";
+import * as mysql from "./data/mysql"
+import {MySQLGameRepository} from "./data/game-repository";
+import {MySQLPathRepository} from "./data/path-repository";
+import {MySQLOptionRepository} from "./data/option-repository";
+import {EngineBuilder} from "./engine";
+import {DataSourceAdapter} from "./data/data-source-adapter";
+import * as readline from "readline"
 
-const path: Path = {
-    description: "You are in a dark hole.",
-    paths: [
-        createOption({
-            tag: "Dig deeper",
-            path: createEndPath("You are now in an even darker hole.")
-        }),
-        createOption({
-            tag: "Climb",
-            path: createEndPath("You got out of the hole!")
-        }),
-    ]
+const app = async () => {
+    const pool = mysql.init()
+    const repo = new MySQLGameRepository(pool)
+    const game = await repo.findById(1)
+    const adapter = new DataSourceAdapter(
+        new MySQLPathRepository(pool),
+        new MySQLOptionRepository(pool),
+    )
+    const engine = await new EngineBuilder()
+        .withInitialPathId(game.initialPathId)
+        .withDataSource(adapter)
+        .build()
+    while (engine.getCurrentPath().options.length > 0) {
+        console.log(engine.getCurrentPath().description)
+        engine.getCurrentPath().options.forEach(o => {
+            console.log(`${o.id}: ${o.action}`)
+        })
+        const next = await requestInput(">>")
+        engine.vote(next)
+        await engine.step()
+    }
+    console.log(engine.getCurrentPath().description)
+    pool.end()
 }
 
-const game: Game = {
-    name: "The Hole",
-    description: "You, the player, is stuck in a hole trying to survive.",
-    initialPath: path,
+const requestInput = (prompt: string): Promise<string> => {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    })
+
+    return new Promise(resolve => rl.question(prompt, ans => {
+        rl.close()
+        resolve(ans)
+    }))
 }
 
-const engine: Engine = new Engine(game)
-
-console.log(engine.currentPath().description)
-
-console.log("Voting once!")
-engine.vote("Climb")
-
-console.log("Voting twice!")
-engine.vote("Climb")
-
-console.log("Stepping to next path")
-engine.step()
-
-console.log(engine.currentPath().description)
+app().then(() => console.log("Exited program"))

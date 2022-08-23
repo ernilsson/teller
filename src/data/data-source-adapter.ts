@@ -1,9 +1,11 @@
 import {PathRepository} from "./path-repository";
 import {OptionRepository} from "./option-repository";
 import * as engine from "../engine";
+import {GameRepository} from "./game-repository";
 
-export class DataSourceAdapter implements engine.EngineDataSource {
+export class DataSourceAdapter implements engine.DataSource {
     constructor(
+        private gameRepository: GameRepository,
         private pathRepository: PathRepository,
         private optionRepository: OptionRepository
     ) {
@@ -21,5 +23,10 @@ export class DataSourceAdapter implements engine.EngineDataSource {
                 votes: 0,
             }))
         }
+    }
+
+    async findInitialPathByGameId(id: number): Promise<engine.Path> {
+        const game = await this.gameRepository.findById(id)
+        return this.findPathById(game.initialPathId)
     }
 }

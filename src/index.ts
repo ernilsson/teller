@@ -1,46 +1,34 @@
-import * as mysql from "./data/mysql"
+require("dotenv").config()
 import {MySQLGameRepository} from "./data/game-repository";
+import {init} from "./data/mysql"
 import {MySQLPathRepository} from "./data/path-repository";
 import {MySQLOptionRepository} from "./data/option-repository";
-import {EngineBuilder} from "./engine";
 import {DataSourceAdapter} from "./data/data-source-adapter";
-import * as readline from "readline"
+import {GameBuilder, GameRegistry} from "./engine";
+import {DiscordController} from "./controller/discord-controller";
+import {StepCommandHandler, TellCommandHandler, VoteCommandHandler} from "./controller/handlers";
 
 const app = async () => {
-    const pool = mysql.init()
-    const repo = new MySQLGameRepository(pool)
-    const game = await repo.findById(1)
-    const adapter = new DataSourceAdapter(
+    const pool = init()
+    const datasource = new DataSourceAdapter(
+        new MySQLGameRepository(pool),
         new MySQLPathRepository(pool),
         new MySQLOptionRepository(pool),
     )
-    const engine = await new EngineBuilder()
-        .withInitialPathId(game.initialPathId)
-        .withDataSource(adapter)
-        .build()
-    while (engine.getCurrentPath().options.length > 0) {
-        console.log(engine.getCurrentPath().description)
-        engine.getCurrentPath().options.forEach(o => {
-            console.log(`${o.id}: ${o.action}`)
-        })
-        const next = await requestInput(">>")
-        engine.vote(next)
-        await engine.step()
-    }
-    console.log(engine.getCurrentPath().description)
-    pool.end()
-}
 
-const requestInput = (prompt: string): Promise<string> => {
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
+    const builder = new GameBuilder(datasource)
+    const registry = new GameRegistry()
+    const controller = new DiscordController([
+            new TellCommandHandler(registry, builder),
+            new VoteCommandHandler(registry),
+            new StepCommandHandler(registry)
+    ])
+
+    await controller.start({
+        token: process.env.DISCORD_TOKEN!,
+        clientId: process.env.CLIENT_ID!,
+        guildId: process.env.GUILD_ID!,
     })
-
-    return new Promise(resolve => rl.question(prompt, ans => {
-        rl.close()
-        resolve(ans)
-    }))
 }
 
-app().then(() => console.log("Exited program"))
+app().then(() => console.log("Teller has been started"))

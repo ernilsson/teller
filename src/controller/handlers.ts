@@ -24,13 +24,15 @@ export class TellCommandHandler implements CommandHandler {
         return !this.registry.isGameOngoing(cmd.channelId);
     }
 
-    handle(interaction: CommandInteraction): Promise<void> {
+    handle(cmd: CommandInteraction): Promise<void> {
         return new Promise<void>(async resolve => {
-            const id = interaction.options.get("id")
-            const game = await this.builder.withGameId(id?.value as number).build()
-            this.registry.startGame(interaction.channelId, game)
-            await interaction.reply("Starting game!")
-            await interaction.channel!.send(this.renderer.render(game.getCurrentPath()))
+            const id = cmd.options.get("id")
+            const game = await this.builder.withGameId(id?.value as number)
+                .withGameMasterId(cmd.user.id)
+                .build()
+            this.registry.startGame(cmd.channelId, game)
+            await cmd.reply(`**${cmd.user.tag}** has started a new game`)
+            await cmd.channel!.send(this.renderer.render(game.getCurrentPath()))
             resolve()
         })
     }
@@ -57,6 +59,8 @@ export class VoteCommandHandler implements CommandHandler {
             } catch (err) {
                if (err instanceof EngineError) {
                    await cmd.reply(err.getMessage())
+               } else {
+                   console.error(err)
                }
             }
             resolve()
@@ -76,7 +80,15 @@ export class StepCommandHandler implements CommandHandler {
     handle(cmd: CommandInteraction): Promise<void> {
         return new Promise(async (resolve) => {
             const game = this.registry.getGame(cmd.channelId!)
-            await game.step()
+            try {
+                await game.step(cmd.user.id)
+            } catch (err) {
+                if (err instanceof EngineError) {
+                    await cmd.reply(err.getMessage())
+                } else {
+                    console.error(err)
+                }
+            }
             // TODO: err handling
             await cmd.reply("Voting has been closed")
             await cmd.channel!.send(this.renderer.render(game.getCurrentPath()))

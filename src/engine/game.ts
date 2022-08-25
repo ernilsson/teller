@@ -21,7 +21,7 @@ export class Game {
     private path!: Path
     private voters: string[]
 
-    constructor(private dataSource: DataSource) {
+    constructor(private dataSource: DataSource, private gameMaster: string) {
         this.voters = []
     }
 
@@ -33,7 +33,10 @@ export class Game {
         return this.path
     }
 
-    async step() {
+    async step(userId: string) {
+        if (userId !== this.gameMaster) {
+            throw new EngineError("Only the game master can proceed the story")
+        }
         const option = this.path.options.reduce((previous, current) =>
             previous.votes > current.votes ? previous : current)
         this.path = await this.dataSource.findPathById(option.nextPathId)
@@ -59,10 +62,13 @@ export class Game {
 
 export class GameBuilder {
     private static readonly NO_GAME_ID = -1
+    private static readonly NO_GAME_MASTER_ID = ""
     private gameId: number
+    private gameMasterId: string
 
     constructor(private dataSource: DataSource) {
         this.gameId = GameBuilder.NO_GAME_ID;
+        this.gameMasterId = GameBuilder.NO_GAME_MASTER_ID
     }
 
     withGameId(id: number): GameBuilder {
@@ -70,11 +76,19 @@ export class GameBuilder {
         return this
     }
 
+    withGameMasterId(id: string): GameBuilder {
+        this.gameMasterId = id
+        return this
+    }
+
     async build(): Promise<Game> {
         if (this.gameId === GameBuilder.NO_GAME_ID) {
-            throw new Error("No game ID provided to builder.")
+            throw new Error("No game ID provided to builder")
         }
-        const engine = new Game(this.dataSource)
+        if (this.gameMasterId === GameBuilder.NO_GAME_MASTER_ID) {
+            throw new Error("No game master ID provided to builder")
+        }
+        const engine = new Game(this.dataSource, this.gameMasterId)
         await engine.loadGame(this.gameId)
         this.reset()
         return engine

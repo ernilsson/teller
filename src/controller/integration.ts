@@ -1,6 +1,6 @@
 import {Client, GatewayIntentBits, Routes, Interaction, SlashCommandBuilder} from "discord.js";
 import {REST} from "@discordjs/rest"
-import {CommandHandler} from "./handlers";
+import {CommandHandler, InteractionRouter} from "./router";
 
 export const commands = [
     new SlashCommandBuilder()
@@ -28,26 +28,23 @@ export interface DiscordConfiguration {
     guildId: string
 }
 
-export class DiscordController {
+export class DiscordIntegration {
     private readonly client: Client
 
-    constructor(private handlers: CommandHandler[]) {
+    constructor(private router: InteractionRouter) {
         this.client = new Client({intents: [GatewayIntentBits.Guilds]})
         this.client.once('ready', () => {
-            console.log("Client is ready!")
+            console.log("Discord client is ready!")
         })
     }
 
     async start(config: DiscordConfiguration) {
         this.upsertCommands(config)
-        this.client.on('interactionCreate', async interaction => {
-            if (!interaction.isChatInputCommand()) {
-                console.log("Received unsupported interaction type")
-                return
-            }
-            const handlers = this.handlers.filter(h => h.accept(interaction))
-            for (const handler of handlers) {
-                await handler.handle(interaction)
+        this.client.on('interactionCreate', async (interaction) => {
+            try {
+                await this.router.route(interaction)
+            } catch (err) {
+                console.error(err)
             }
         })
         await this.login(config.token)

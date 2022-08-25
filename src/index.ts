@@ -5,8 +5,13 @@ import {MySQLPathRepository} from "./data/path-repository";
 import {MySQLOptionRepository} from "./data/option-repository";
 import {DataSourceAdapter} from "./data/data-source-adapter";
 import {GameBuilder, GameRegistry} from "./engine";
-import {DiscordController} from "./controller/discord-controller";
-import {StepCommandHandler, TellCommandHandler, VoteCommandHandler} from "./controller/handlers";
+import {DiscordIntegration} from "./controller/integration";
+import {
+    CommandInteractionRouter,
+    StepCommandHandler,
+    TellCommandHandler,
+    VoteCommandHandler
+} from "./controller/router";
 
 const app = async () => {
     const pool = init()
@@ -18,11 +23,11 @@ const app = async () => {
 
     const builder = new GameBuilder(datasource)
     const registry = new GameRegistry()
-    const controller = new DiscordController([
+    const controller = new DiscordIntegration(new CommandInteractionRouter([
             new TellCommandHandler(registry, builder),
             new VoteCommandHandler(registry),
             new StepCommandHandler(registry)
-    ])
+        ]))
 
     await controller.start({
         token: process.env.DISCORD_TOKEN!,

@@ -1,12 +1,18 @@
 import {createPool, Pool} from "mysql";
 
-export const init = (): Pool => {
+export interface MySQLConfiguration {
+    host: string
+    user: string
+    password: string
+}
+
+export const init = (config: MySQLConfiguration): Pool => {
     try {
         const pool = createPool({
             connectionLimit: 5,
-            host: "localhost",
-            user: "root",
-            password: "root",
+            host: config.host,
+            user: config.user,
+            password: config.password,
             database: "teller",
         })
         console.info("Created connection pool")

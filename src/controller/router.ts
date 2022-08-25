@@ -17,6 +17,10 @@ export class CommandInteractionRouter implements InteractionRouter {
                 return;
             }
             const handlers = this.handlers.filter(h => h.accept(interaction))
+            if (handlers.length === 0) {
+                await interaction.reply("Sorry, this action cannot be carried out right now!")
+                return
+            }
             for (let handler of handlers) {
                 try {
                     await handler.handle(interaction)
@@ -116,7 +120,6 @@ export class StepCommandHandler implements CommandHandler {
                 }
                 return
             }
-            // TODO: err handling
             await cmd.reply("Voting has been closed")
             await cmd.channel!.send(this.renderer.render(game.getCurrentPath()))
             if (game.hasEnded()) {

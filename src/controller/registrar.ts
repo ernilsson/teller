@@ -8,7 +8,7 @@ export class CommandRegistrar {
     }
 
     register(config: DiscordConfiguration) {
-        const commands = this.builders.map(b => b.build())
+        const commands = this.builders.map(b => b.build()).map(c => c.toJSON())
         const rest = new REST({version: '10'}).setToken(config.token)
         rest.put(Routes.applicationCommands(config.clientId), {body: commands})
             .then(() => console.log("Registered commands."))

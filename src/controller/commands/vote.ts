@@ -1,13 +1,14 @@
 import {GameRegistry} from "../../engine";
 import {CommandInteraction, SlashCommandBuilder} from "discord.js";
-import {EngineError} from "../../engine/errors";
 import {Command} from "./command";
+import {IllegalStateError} from "../errors";
 
 export class VoteCommand implements Command {
     private static readonly NAME = "vote"
     private static readonly OPTION_PATH = "path"
 
-    constructor(private registry: GameRegistry) {}
+    constructor(private registry: GameRegistry) {
+    }
 
     build(): SlashCommandBuilder {
         return new SlashCommandBuilder()
@@ -23,25 +24,13 @@ export class VoteCommand implements Command {
         return cmd.commandName === VoteCommand.NAME
     }
 
-    handle(cmd: CommandInteraction): Promise<void> {
-        return new Promise(async (resolve) => {
-            if (!this.registry.hasGame(cmd.channelId)) {
-                await cmd.reply("Please start a game before voting")
-                return
-            }
-            const game = this.registry.getGame(cmd.channelId!)
-            const id = cmd.options.get(VoteCommand.OPTION_PATH)
-            try {
-                game.vote(id?.value as string, { id: cmd.user.id })
-                await cmd.reply("Your vote has been counted.")
-            } catch (err) {
-                if (err instanceof EngineError) {
-                    await cmd.reply(err.getMessage())
-                } else {
-                    console.error(err)
-                }
-            }
-            resolve()
-        })
+    async handle(cmd: CommandInteraction) {
+        if (!this.registry.hasGame(cmd.channelId)) {
+            throw new IllegalStateError("No game is running in this channel")
+        }
+        const game = this.registry.getGame(cmd.channelId!)
+        const id = cmd.options.get(VoteCommand.OPTION_PATH)
+        game.vote(id?.value as string, {id: cmd.user.id})
+        await cmd.reply("Your vote has been counted.")
     }
 }

@@ -1,4 +1,4 @@
-import {EngineError} from "./errors";
+import {EngineError, IllegalOperationError, InvalidArgumentError, InvalidStateError} from "./errors";
 
 export interface Path {
     description: string
@@ -23,13 +23,13 @@ export interface DataSource {
 
 export class Game {
     private path!: Path
-    private voters: Player[]
+    private voters: Set<string>
 
     constructor(
         private dataSource: DataSource,
         private gameMaster: Player
     ) {
-        this.voters = []
+        this.voters = new Set<string>()
     }
 
     async loadGame(gameId: number) {
@@ -42,28 +42,24 @@ export class Game {
 
     async step(player: Player) {
         if (player.id !== this.gameMaster.id) {
-            throw new EngineError("Only the game master can proceed the story")
+            throw new IllegalOperationError("Only the game master can proceed the story")
         }
         const option = this.path.options.reduce((previous, current) =>
             previous.votes > current.votes ? previous : current)
         this.path = await this.dataSource.findPathById(option.nextPathId)
-        this.voters = []
+        this.voters.clear()
     }
 
     vote(id: string, player: Player) {
-        if (this.hasVoted(player)) {
-            throw new EngineError("Player tried to vote more than once")
+        if (this.voters.has(player.id)) {
+            throw new IllegalOperationError("Player tried to vote more than once")
         }
         const option = this.path.options.find(o => o.id === id)
         if (!option) {
-            throw new EngineError("Player tried to vote for extraneous options")
+            throw new InvalidArgumentError("Player tried to vote for extraneous options")
         }
         option.votes++
-        this.voters.push(player)
-    }
-
-    hasVoted(player: Player): boolean {
-        return this.voters.map(p => p.id).includes(player.id)
+        this.voters.add(player.id)
     }
 
     hasEnded(): boolean {
@@ -94,10 +90,10 @@ export class GameBuilder {
 
     async build(): Promise<Game> {
         if (this.gameId === GameBuilder.NO_GAME_ID) {
-            throw new Error("No game ID provided to builder")
+            throw new InvalidStateError("No game ID provided to builder")
         }
         if (this.gameMaster === GameBuilder.NO_GAME_MASTER) {
-            throw new Error("No game master ID provided to builder")
+            throw new InvalidStateError("No game master ID provided to builder")
         }
         const engine = new Game(this.dataSource, this.gameMaster)
         await engine.loadGame(this.gameId)

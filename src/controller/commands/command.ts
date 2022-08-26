@@ -2,7 +2,7 @@ import {CommandInteraction, SlashCommandBuilder} from "discord.js";
 
 export interface CommandHandler {
     accept(interaction: CommandInteraction): boolean
-    handle(interaction: CommandInteraction): Promise<void>
+    handle(interaction: CommandInteraction): void
 }
 
 export interface CommandBuilder {

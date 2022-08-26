@@ -14,7 +14,7 @@ export class DiscordIntegration {
         this.client.once('ready', () => {
             console.log("Discord client has reached 'ready' state")
         })
-        this.router = new CommandInteractionRouter(commands)
+        this.router = new CommandInteractionRouter().registerCommandHandlers(commands)
         this.registrar = new CommandRegistrar(commands)
     }
 

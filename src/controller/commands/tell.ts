@@ -12,7 +12,8 @@ export class TellCommand implements Command {
     constructor(
         private registry: GameRegistry,
         private builder: GameBuilder
-    ) {}
+    ) {
+    }
 
     build(): SlashCommandBuilder {
         return new SlashCommandBuilder()
@@ -28,16 +29,13 @@ export class TellCommand implements Command {
         return cmd.commandName === TellCommand.NAME
     }
 
-    handle(cmd: CommandInteraction): Promise<void> {
-        return new Promise<void>(async resolve => {
-            const id = cmd.options.get(TellCommand.OPTION_ID)
-            const game = await this.builder.withGameId(id?.value as number)
-                .withGameMaster({ id: cmd.user.id })
-                .build()
-            this.registry.startGame(cmd.channelId, game)
-            await cmd.reply(`**${cmd.user.tag}** has started a new game`)
-            await cmd.channel!.send(this.renderer.render(game.getCurrentPath()))
-            resolve()
-        })
+    async handle(cmd: CommandInteraction) {
+        const id = cmd.options.get(TellCommand.OPTION_ID)
+        const game = await this.builder.withGameId(id?.value as number)
+            .withGameMaster({id: cmd.user.id})
+            .build()
+        this.registry.startGame(cmd.channelId, game)
+        await cmd.reply(`**${cmd.user.tag}** has started a new game`)
+        await cmd.channel!.send(this.renderer.render(game.getCurrentPath()))
     }
 }

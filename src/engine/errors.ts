@@ -1,8 +1,19 @@
-export class EngineError {
-    constructor(private message: string) {
-    }
+export class EngineError extends Error {}
 
-    getMessage(): string {
-        return this.message
+export class InvalidStateError extends EngineError {
+    constructor(msg: string) {
+        super(msg);
+    }
+}
+
+export class InvalidArgumentError extends EngineError {
+    constructor(msg: string) {
+        super(msg);
+    }
+}
+
+export class IllegalOperationError extends EngineError {
+    constructor(msg: string) {
+        super(msg);
     }
 }

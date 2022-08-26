@@ -29,7 +29,7 @@ export class StepCommand implements Command {
             }
             const game = this.registry.getGame(cmd.channelId!)
             try {
-                await game.step(cmd.user.id)
+                await game.step({ id: cmd.user.id })
             } catch (err) {
                 if (err instanceof EngineError) {
                     await cmd.reply(err.getMessage())

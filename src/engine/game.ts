@@ -12,6 +12,10 @@ export interface Option {
     votes: number
 }
 
+export interface Player {
+    id: string
+}
+
 export interface DataSource {
     findPathById(id: number): Promise<Path>
     findInitialPathByGameId(id: number): Promise<Path>
@@ -19,11 +23,11 @@ export interface DataSource {
 
 export class Game {
     private path!: Path
-    private voters: string[]
+    private voters: Player[]
 
     constructor(
         private dataSource: DataSource,
-        private gameMaster: string
+        private gameMaster: Player
     ) {
         this.voters = []
     }
@@ -36,8 +40,8 @@ export class Game {
         return this.path
     }
 
-    async step(userId: string) {
-        if (userId !== this.gameMaster) {
+    async step(player: Player) {
+        if (player.id !== this.gameMaster.id) {
             throw new EngineError("Only the game master can proceed the story")
         }
         const option = this.path.options.reduce((previous, current) =>
@@ -46,7 +50,7 @@ export class Game {
         this.voters = []
     }
 
-    vote(id: string, player: string) {
+    vote(id: string, player: Player) {
         if (this.voters.includes(player)) {
             throw new EngineError("Player tried to vote more than once")
         }
@@ -65,13 +69,13 @@ export class Game {
 
 export class GameBuilder {
     private static readonly NO_GAME_ID = -1
-    private static readonly NO_GAME_MASTER_ID = ""
+    private static readonly NO_GAME_MASTER = { id: "" }
     private gameId: number
-    private gameMasterId: string
+    private gameMaster: Player
 
     constructor(private dataSource: DataSource) {
         this.gameId = GameBuilder.NO_GAME_ID;
-        this.gameMasterId = GameBuilder.NO_GAME_MASTER_ID
+        this.gameMaster = GameBuilder.NO_GAME_MASTER
     }
 
     withGameId(id: number): GameBuilder {
@@ -79,8 +83,8 @@ export class GameBuilder {
         return this
     }
 
-    withGameMasterId(id: string): GameBuilder {
-        this.gameMasterId = id
+    withGameMaster(player: Player): GameBuilder {
+        this.gameMaster = player
         return this
     }
 
@@ -88,10 +92,10 @@ export class GameBuilder {
         if (this.gameId === GameBuilder.NO_GAME_ID) {
             throw new Error("No game ID provided to builder")
         }
-        if (this.gameMasterId === GameBuilder.NO_GAME_MASTER_ID) {
+        if (this.gameMaster === GameBuilder.NO_GAME_MASTER) {
             throw new Error("No game master ID provided to builder")
         }
-        const engine = new Game(this.dataSource, this.gameMasterId)
+        const engine = new Game(this.dataSource, this.gameMaster)
         await engine.loadGame(this.gameId)
         this.reset()
         return engine

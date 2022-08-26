@@ -32,7 +32,7 @@ export class TellCommand implements Command {
         return new Promise<void>(async resolve => {
             const id = cmd.options.get(TellCommand.OPTION_ID)
             const game = await this.builder.withGameId(id?.value as number)
-                .withGameMasterId(cmd.user.id)
+                .withGameMaster({ id: cmd.user.id })
                 .build()
             this.registry.startGame(cmd.channelId, game)
             await cmd.reply(`**${cmd.user.tag}** has started a new game`)

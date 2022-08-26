@@ -32,7 +32,7 @@ export class VoteCommand implements Command {
             const game = this.registry.getGame(cmd.channelId!)
             const id = cmd.options.get(VoteCommand.OPTION_PATH)
             try {
-                game.vote(id?.value as string, cmd.user.id)
+                game.vote(id?.value as string, { id: cmd.user.id })
                 await cmd.reply("Your vote has been counted.")
             } catch (err) {
                 if (err instanceof EngineError) {

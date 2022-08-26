@@ -1,7 +1,7 @@
-import {PathRepository} from "./path-repository";
-import {OptionRepository} from "./option-repository";
-import * as engine from "../engine";
-import {GameRepository} from "./game-repository";
+import {PathRepository} from "../path";
+import {OptionRepository} from "../option";
+import * as engine from "../../engine";
+import {GameRepository} from "../game";
 
 export class DataSourceAdapter implements engine.DataSource {
     constructor(

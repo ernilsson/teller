@@ -1,11 +1,9 @@
-import {CommandInteractionRouter} from "./controller/router";
-
 require("dotenv").config()
-import {MySQLGameRepository} from "./data/game-repository";
-import {init, MySQLConfiguration} from "./data/mysql"
-import {MySQLPathRepository} from "./data/path-repository";
-import {MySQLOptionRepository} from "./data/option-repository";
-import {DataSourceAdapter} from "./data/data-source-adapter";
+import {MySQLGameRepository} from "./data/mysql/game";
+import {init, MySQLConfiguration} from "./data/mysql/pool"
+import {MySQLPathRepository} from "./data/mysql/path";
+import {MySQLOptionRepository} from "./data/mysql/option";
+import {DataSourceAdapter} from "./data/mysql/data-source-adapter";
 import {GameBuilder, GameRegistry} from "./engine";
 import {DiscordIntegration} from "./controller/integration";
 import {TellCommand} from "./controller/commands/tell";

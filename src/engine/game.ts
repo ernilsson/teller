@@ -51,7 +51,7 @@ export class Game {
     }
 
     vote(id: string, player: Player) {
-        if (this.voters.includes(player)) {
+        if (this.hasVoted(player)) {
             throw new EngineError("Player tried to vote more than once")
         }
         const option = this.path.options.find(o => o.id === id)
@@ -60,6 +60,10 @@ export class Game {
         }
         option.votes++
         this.voters.push(player)
+    }
+
+    hasVoted(player: Player): boolean {
+        return this.voters.map(p => p.id).includes(player.id)
     }
 
     hasEnded(): boolean {

@@ -23,7 +23,7 @@ export class StepCommand implements Command {
 
     handle(cmd: CommandInteraction): Promise<void> {
         return new Promise(async (resolve) => {
-            if (!this.registry.isGameOngoing(cmd.channelId)) {
+            if (!this.registry.hasGame(cmd.channelId)) {
                 await cmd.reply("Please start a game first")
                 return
             }

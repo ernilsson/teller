@@ -1,5 +1,5 @@
 import {Pool} from "mysql";
-import {Path} from "../../models/path";
+import {Path} from "../models/path";
 import {PathRepository} from "../path";
 
 export class MySQLPathRepository extends PathRepository {

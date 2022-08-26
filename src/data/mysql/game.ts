@@ -1,5 +1,5 @@
 import {Pool} from "mysql";
-import {Game} from "../../models/game";
+import {Game} from "../models/game";
 import {GameRepository} from "../game";
 
 export class MySQLGameRepository extends GameRepository {

@@ -1,4 +1,4 @@
-import {Option} from "../models/option"
+import {Option} from "./models/option"
 import {Pool} from "mysql";
 
 export abstract class OptionRepository {

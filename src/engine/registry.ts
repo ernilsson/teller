@@ -1,4 +1,4 @@
-import {Game} from "./index";
+import {Game} from "./game";
 
 export class GameRegistry {
     private map: Map<string, Game>
@@ -7,7 +7,7 @@ export class GameRegistry {
         this.map = new Map<string, Game>()
     }
 
-    isGameOngoing(channelId: string): boolean {
+    hasGame(channelId: string): boolean {
         return this.map.has(channelId)
     }
 
@@ -16,9 +16,6 @@ export class GameRegistry {
     }
 
     startGame(channelId: string, engine: Game) {
-        if (this.isGameOngoing(channelId)) {
-            throw new Error("Cannot overwrite ongoing game.")
-        }
         this.map.set(channelId, engine)
     }
 

@@ -21,7 +21,10 @@ export class Game {
     private path!: Path
     private voters: string[]
 
-    constructor(private dataSource: DataSource, private gameMaster: string) {
+    constructor(
+        private dataSource: DataSource,
+        private gameMaster: string
+    ) {
         this.voters = []
     }
 

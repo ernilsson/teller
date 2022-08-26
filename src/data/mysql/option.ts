@@ -1,5 +1,5 @@
 import {Pool} from "mysql";
-import {Option} from "../../models/option";
+import {Option} from "../models/option";
 import {OptionRepository} from "../option";
 
 interface OptionEntity {

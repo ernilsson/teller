@@ -1,3 +1,6 @@
+import express from "express";
+import {storyRouter} from "./controller/rest/story"
+
 require("dotenv").config()
 import {MySQLGameRepository} from "./data/mysql/game";
 import {init, MySQLConfiguration} from "./data/mysql/pool"
@@ -10,6 +13,7 @@ import {TellCommand} from "./controller/commands/tell";
 import {VoteCommand} from "./controller/commands/vote";
 import {StepCommand} from "./controller/commands/step";
 import {DiscordConfiguration} from "./controller/config";
+import {StoryService} from "./service/story";
 
 const app = async () => {
     const pool = init(getMysqlConfig())
@@ -28,6 +32,16 @@ const app = async () => {
         ])
 
     await controller.start(getDiscordConfig())
+
+    const rest = express()
+    rest.use(express.json())
+    rest.use(storyRouter(new StoryService(
+        new MySQLGameRepository(pool),
+        new MySQLPathRepository(pool),
+        new MySQLOptionRepository(pool),
+    )))
+    rest.listen(process.env.PORT || 3000, () =>
+        console.log(`Rest interface is listening on port ${process.env.PORT || 3000}`))
 }
 
 const getMysqlConfig = (): MySQLConfiguration => {

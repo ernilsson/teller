@@ -1,5 +1,5 @@
 import {Pool} from "mysql";
-import {Game} from "../models/game";
+import {Game, GameInsertPayload} from "../models/game";
 import {GameRepository} from "../game";
 
 export class MySQLGameRepository extends GameRepository {
@@ -22,6 +22,22 @@ export class MySQLGameRepository extends GameRepository {
                     id: result[0].id,
                     name: result[0].name,
                     initialPathId: result[0].initial_path_id
+                })
+            })
+        })
+    }
+
+    insert(game: GameInsertPayload): Promise<Game> {
+        return new Promise<Game>((resolve, reject) => {
+            const parameters = [game.name, game.initialPathId]
+            this.pool.query("INSERT INTO teller.game (name, initial_path_id) VALUES (?, ?)", parameters, (err, result) => {
+                if (err) {
+                    reject(err)
+                    return
+                }
+                resolve({
+                    ...game,
+                    id: result.insertId,
                 })
             })
         })

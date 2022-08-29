@@ -1,5 +1,5 @@
 import {Pool} from "mysql";
-import {Path} from "../models/path";
+import {Path, PathInsertPayload} from "../models/path";
 import {PathRepository} from "../path";
 
 export class MySQLPathRepository extends PathRepository {
@@ -17,6 +17,21 @@ export class MySQLPathRepository extends PathRepository {
                 resolve({
                     id: result[0].id,
                     description: result[0].description,
+                })
+            })
+        })
+    }
+
+    insert(path: PathInsertPayload): Promise<Path> {
+        return new Promise<Path>((resolve, reject) => {
+            this.pool.query("INSERT INTO teller.path (description) VALUES (?)", path.description, (err, result) => {
+                if (err) {
+                    reject(err)
+                    return
+                }
+                resolve({
+                    ...path,
+                    id: result.insertId,
                 })
             })
         })

@@ -3,3 +3,8 @@ export interface Game {
     name: string
     initialPathId: number
 }
+
+export interface GameInsertPayload {
+    name: string
+    initialPathId: number
+}

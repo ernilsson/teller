@@ -1,5 +1,5 @@
 import {Pool} from "mysql";
-import {Option} from "../models/option";
+import {Option, OptionInsertPayload} from "../models/option";
 import {OptionRepository} from "../option";
 
 interface OptionEntity {
@@ -28,5 +28,21 @@ export class MySQLOptionRepository extends OptionRepository {
                 }))
             })
         });
+    }
+
+    insert(option: OptionInsertPayload): Promise<Option> {
+        return new Promise((resolve, reject) => {
+            const parameters = [option.action, option.parentPathId, option.childPathId]
+            this.pool.query("INSERT INTO teller.option (action, parent_path_id, child_path_id) VALUES (?, ?, ?)", parameters, (err, result) => {
+                if (err) {
+                    reject(err)
+                    return
+                }
+                resolve({
+                    ...option,
+                    id: result.insertId
+                })
+            })
+        })
     }
 }

@@ -1,6 +1,6 @@
-import {Path} from "./models/path"
-import {Pool} from "mysql";
+import {Path, PathInsertPayload} from "./models/path"
 
 export abstract class PathRepository {
     abstract findById(id: number): Promise<Path>
+    abstract insert(path: PathInsertPayload): Promise<Path>
 }

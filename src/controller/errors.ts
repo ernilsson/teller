@@ -1,4 +1,8 @@
 export class ApiError extends Error {
+    constructor(msg: string) {
+        super(msg);
+    }
+
 }
 
 export class InvalidCommandError extends ApiError {

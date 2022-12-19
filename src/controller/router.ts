@@ -1,7 +1,6 @@
-import {Interaction} from "discord.js";
+import {CommandInteraction, Interaction} from "discord.js";
 import {CommandHandler} from "./commands/command";
 import {ApiError, InvalidCommandError} from "./errors";
-import {EngineError} from "../engine/errors";
 
 export interface InteractionRouter {
     route(interaction: Interaction): void
@@ -14,7 +13,6 @@ export class CommandInteractionRouter implements InteractionRouter {
     constructor() {
         this.registerErrorHandlers([
             new ApiErrorHandler(),
-            new EngineErrorHandler(),
         ])
     }
 
@@ -42,13 +40,14 @@ export class CommandInteractionRouter implements InteractionRouter {
         if (!interaction.isChatInputCommand()) {
             return;
         }
-        const handlers = this.handlers.filter(h => h.accept(interaction))
+        const command = interaction as CommandInteraction
+        const handlers = this.handlers.filter(h => h.accept(command))
         try {
             if (handlers.length === 0) {
-                throw new InvalidCommandError(`Failed to find a handler for command: ${interaction.commandName}`)
+                throw new InvalidCommandError(`Failed to find a handler for command: ${command.commandName}`)
             }
             for (const handler of handlers) {
-                await handler.handle(interaction)
+                await handler.handle(command)
             }
         } catch (err) {
             await this.handle(interaction, err)
@@ -76,18 +75,6 @@ class ApiErrorHandler implements ErrorHandler {
     async handle(interaction: Interaction, err: any) {
         if (interaction.isRepliable()) {
             await interaction.reply((err as ApiError).message)
-        }
-    }
-}
-
-class EngineErrorHandler implements ErrorHandler {
-    accept(err: any): boolean {
-        return err instanceof EngineError
-    }
-
-    async handle(interaction: Interaction, err: any) {
-        if (interaction.isRepliable()) {
-            await interaction.reply((err as EngineError).message)
         }
     }
 }

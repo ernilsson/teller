@@ -1,25 +1,13 @@
-import {Bus} from "./events";
 import { EventEmitter } from "events";
+import {Story} from "../model/story";
+import {Engine} from "../core/engine";
 
 export class StoryService {
-    constructor(private emitter: EventEmitter) {
-    }
-    async create(story: any) {
-        // TODO: Load story as playable
-        this.emitter.emit('story.start', {
-            action: "created"
-        })
-    }
 
-    async start(channelId: string) {
-        // TODO: start loaded story in the provided channel
-        this.emitter.emit('story.start', {
-            action: "start",
-            channelId
-        })
-    }
+    constructor(private emitter: EventEmitter, private engine: Engine) {}
 
-    async step() {
-        // TODO: close voting and step to next path
+    create(story: Story) {
+        this.engine.load(story)
+        this.emitter.emit('story.loaded')
     }
 }

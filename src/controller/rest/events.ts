@@ -16,9 +16,16 @@ export const events = (emitter: EventEmitter): Router => {
             'Cache-Control': 'no-cache',
             'Connection': 'keep-alive'
         })
-        emitter.on('story.start', (e) => {
-            console.log(e)
-            res.write(serverSideEvent(JSON.stringify(e)))
+        emitter.on('story.loaded', () => {
+            res.write(serverSideEvent(JSON.stringify({
+                type: 'story.loaded',
+            })))
+        })
+        emitter.on('game.started', (event) => {
+            res.write(serverSideEvent(JSON.stringify({
+                type: 'game.started',
+                ...event
+            })))
         })
     })
 

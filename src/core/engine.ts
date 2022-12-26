@@ -102,12 +102,6 @@ export interface InternalPath {
 }
 
 const pathToInternal = (path: Path): InternalPath => {
-    /*const internal: InternalPath = {
-        prompt: path.prompt,
-    }
-    if (!!path.actions) {
-        internal.actions = path.actions.map((action, index) => actionToInternal(index, action))
-    }*/
     return {
         prompt: path.prompt,
         actions: path.actions?.map((action, index) => actionToInternal(index, action))

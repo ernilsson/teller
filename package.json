@@ -12,7 +12,9 @@
     "typescript": "^4.7.4"
   },
   "scripts": {
-    "start": "ts-node ./src/index.ts",
+    "client": "cd dashboard && npm run build",
+    "server": "ts-node ./src/index.ts",
+    "start": "npm run client && npm run server",
     "build": "tsc",
     "migration:init": "knex init",
     "migration:run": "knex migrate:latest",

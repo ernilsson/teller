@@ -1,0 +1,10 @@
+@import 'vars';
+
+body {
+  background: $background;
+  padding: 2rem;
+
+  & > * {
+    color: $light;
+  }
+}

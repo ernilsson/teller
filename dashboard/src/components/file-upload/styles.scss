@@ -1,0 +1,22 @@
+@import '../../vars';
+
+.file-upload {
+  display: flex;
+  align-items: center;
+
+  &__label {
+    display: inline-block;
+    padding: .2rem 1.5rem;
+    border-radius: $radius-md;
+    cursor: pointer;
+    background: $key;
+  }
+
+  &__name {
+    padding: 0 1.2rem;
+  }
+
+  &__input {
+    display: none;
+  }
+}
